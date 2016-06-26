@@ -14,12 +14,12 @@ func main() {
 			return http.StatusBadRequest, "Incorrect POST request"
 		}
 
-		username := request.FormValue("username")
+		username := request.Form.Get("username")
 		if username == "" {
 			return http.StatusBadRequest, "Parameter 'username' is not valid"
 		}
 
-		password := request.FormValue("password")
+		password := request.Form.Get("password")
 		if password == "" {
 			return http.StatusBadRequest, "Parameter 'password' is not valid"
 		}
