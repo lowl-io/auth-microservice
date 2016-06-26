@@ -8,23 +8,24 @@ import (
 func main() {
 	m := martini.Classic()
 
-	m.Post("/token", func(req *http.Request) (int, string) {
-
-		username := req.PostFormValue("username")
-		password := req.PostFormValue("password")
-
-		if username == "" && password == "" {
-			return 400, "Bad Request"
+	m.Post("/token", func(request *http.Request) (int, string) {
+		err := request.ParseForm()
+		if err != nil {
+			return http.StatusBadRequest, "Incorrect POST request"
 		}
 
-		return 201, "Created"
+		username := request.FormValue("username")
+		if username == "" {
+			return http.StatusBadRequest, "Parameter 'username' is not valid"
+		}
+
+		password := request.FormValue("password")
+		if password == "" {
+			return http.StatusBadRequest, "Parameter 'password' is not valid"
+		}
+
+		return http.StatusCreated, "Created"
 	})
 
 	m.Run()
 }
-
-//POST /token body: username: "", password: ""
-//Не пустой приходил ответ 201 CREATED
-//
-//А если нет username или password или они пустые
-//Возвращать BAD_REQUEST
