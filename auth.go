@@ -9,9 +9,9 @@ import (
 
 type User struct {
 	id       uint
-	name     string
+	name     string `grom:"index"`
 	password string
-	email    string
+	email    string	`gorm:"index"`
 }
 
 type UserStatus struct {
@@ -22,7 +22,14 @@ type UserStatus struct {
 
 func main() {
 	m := martini.Classic()
-	
+
+	db, err := gorm.Open("postgres", "user=postgres dbname=PostgresDB")
+	if err != nil {
+		panic("Faild to connect database")
+	}
+
+	db.AutoMigrate(&User{})
+
 	m.Post("/token", func(request *http.Request) (int, string) {
 		err := request.ParseForm()
 		if err != nil {
