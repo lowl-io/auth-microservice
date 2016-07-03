@@ -53,7 +53,10 @@ func main() {
 			return http.StatusNotFound, "User with current 'username' not found"
 		}
 
-		user.checkPassword(password)
+		if !user.checkPassword(password) {
+			return http.StatusForbidden, ""
+		}
+
 		encryptPassword(password)
 
 		return http.StatusCreated, "Created"
