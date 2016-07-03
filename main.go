@@ -1,10 +1,11 @@
 package main
 
 import (
+	"golang.org/x/crypto/sha3"
 	"github.com/go-martini/martini"
 	"github.com/jinzhu/gorm"
-	_ "github.com/jinzhu/gorm/dialects/postgres"
 	"net/http"
+	_ "github.com/jinzhu/gorm/dialects/postgres"
 )
 
 func (user User) checkPassword(possiblePassword string) bool {
@@ -13,6 +14,11 @@ func (user User) checkPassword(possiblePassword string) bool {
 	}
 
 	return false
+}
+
+func encryptPassword(password string) {
+	hash := sha3.New256()
+	hash.Write([]byte(password))
 }
 
 func main() {
@@ -48,6 +54,7 @@ func main() {
 		}
 
 		user.checkPassword(password)
+		encryptPassword(password)
 
 		return http.StatusCreated, "Created"
 	})
