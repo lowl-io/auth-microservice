@@ -4,12 +4,11 @@ import (
 	"github.com/go-martini/martini"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
-	_ "github.com/lib/pq"
 	"net/http"
 )
 
 func (user User) checkPassword(possiblePassword string) bool {
-	if user.password == possiblePassword {
+	if user.Password == possiblePassword {
 		return true
 	}
 
@@ -26,7 +25,8 @@ func main() {
 
 	var user User
 
-	db.Where("name = ?", "Alexander").Find(&user)
+	db.LogMode(true)
+	db.AutoMigrate(&User{})
 
 	m.Post("/token", func(request *http.Request) (int, string) {
 		err := request.ParseForm()
@@ -41,9 +41,13 @@ func main() {
 			return http.StatusBadRequest, "Parameter 'username' or 'password' is not valid"
 		}
 
-		if user.name == username {
-			user.checkPassword(password)
+		db.Where("name = ?", username).Find(&user)
+
+		if user.Name != username {
+			return http.StatusNotFound, "User with current 'username' not found"
 		}
+
+		user.checkPassword(password)
 
 		return http.StatusCreated, "Created"
 	})
