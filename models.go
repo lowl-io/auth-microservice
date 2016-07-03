@@ -1,16 +1,9 @@
 package main
 
 type User struct {
-	id       int    `gorm:"not null;primary_key"`
-	name     string `gorm:"type:varchar(60);unique_index"`
-	email    string `gorm:"type:varchar(255)"`
-	password string `gorm:"type:varchar(60)"`
+	ID       int       `gorm:"not null;type:serial;primary_key"`
+	Name     string    `gorm:"not null;type:varchar(60);unique_index"`
+	Email    string    `gorm:"type:varchar(255);unique_index"`
+	Password string    `gorm:"not null;type:varchar(60)"`
+	Status   string
 }
-
-type UserStatus bool
-
-const (
-	isActive UserStatus = true
-	isDeleted UserStatus = true
-	isBlocked UserStatus = true
-)
