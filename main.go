@@ -3,9 +3,14 @@ package main
 import (
 	"golang.org/x/crypto/sha3"
 	"github.com/go-martini/martini"
-	"github.com/jinzhu/gorm"
+	//"github.com/jinzhu/gorm"
 	"net/http"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
+	"encoding/json"
+	"fmt"
+	"github.com/dgrijalva/jwt-go"
+	"log"
+	"io/ioutil"
 )
 
 func (user User) checkPassword(possiblePassword string) bool {
@@ -21,46 +26,70 @@ func encryptPassword(password string) {
 	hash.Write([]byte(password))
 }
 
-func main() {
-	m := martini.Classic()
+type token struct {
+	Token string `json:"token"`
+}
 
-	db, err := gorm.Open("postgres", "user=postgres dbname=postgresdb password=superuser1.")
+func jsonResponse(response interface{}, w http.ResponseWriter) {
+
+	json, err := json.Marshal(response)
 	if err != nil {
-		panic("Failed to connect database")
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
+
+	w.WriteHeader(http.StatusOK)
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(json)
+}
+
+func loginHandler(response http.ResponseWriter, request *http.Request) {
+	var privateKey []byte
+	privateKey, _ = ioutil.ReadFile("/home/alex/Workspace/golang/src/main/keys/key.rsa")
 
 	var user User
 
-	db.LogMode(true)
-	db.AutoMigrate(&User{})
+	err := json.NewDecoder(request.Body).Decode(&user)
+	if err != nil {
+		response.WriteHeader(http.StatusForbidden)
+		fmt.Println(response, "Error in request")
+		return
+	}
 
-	m.Post("/token", func(request *http.Request) (int, string) {
-		err := request.ParseForm()
-		if err != nil {
-			return http.StatusBadRequest, "Incorrect POST request"
-		}
+	fmt.Println(user.ID, user.Name, user.Password)
 
-		username := request.Form.Get("username")
-		password := request.Form.Get("password")
+	if user.ID != 1 {
+		response.WriteHeader(http.StatusForbidden)
+		fmt.Println("Error logging in")
+		fmt.Println(response, "Invalid user info")
+		return
+	}
 
-		if username == "" || password == "" {
-			return http.StatusBadRequest, "Parameter 'username' or 'password' is not valid"
-		}
+	signer := jwt.New(jwt.SigningMethodRS256)
 
-		db.Where("name = ?", username).Find(&user)
+	tokenString, err := signer.SignedString(privateKey)
+	if err != nil {
+		log.Printf("Error signing token: %v\n", err)
+	}
 
-		if user.Name != username {
-			return http.StatusNotFound, "User with current 'username' not found"
-		}
+	resp := token{tokenString}
+	jsonResponse(resp, response)
+}
 
-		if !user.checkPassword(password) {
-			return http.StatusForbidden, ""
-		}
+func main() {
+	m := martini.Classic()
 
-		encryptPassword(password)
+	//db, err := gorm.Open("postgres", "user=postgres dbname=postgresdb password=superuser1.")
+	//if err != nil {
+	//	panic("Failed to connect database")
+	//}
+	//
+	////var user User
+	////
+	////db.LogMode(true)
+	////db.AutoMigrate(&User{})
 
-		return http.StatusCreated, "Created"
-	})
+	m.Post("/login", loginHandler)
 
 	m.Run()
 }
