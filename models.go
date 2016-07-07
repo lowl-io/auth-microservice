@@ -7,3 +7,12 @@ type User struct {
 	Password string    `gorm:"not null;type:varchar(60)"`
 	Status   string
 }
+
+type DataBaseConfig struct {
+	Dialect      string `json:"dialect"`
+	DataBaseInfo string `json:"databaseinfo"`
+}
+
+type JWTKeyConfig struct {
+	Key string `json:"key"`
+}
