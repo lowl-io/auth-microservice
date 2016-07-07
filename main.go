@@ -10,6 +10,8 @@ import (
 	"io/ioutil"
 	"net/http"
 	"fmt"
+	"encoding/json"
+	"bytes"
 )
 
 func (user User) checkPassword(possiblePassword string) bool {
@@ -22,13 +24,17 @@ func (user User) checkPassword(possiblePassword string) bool {
 }
 
 func loginHandler(response http.ResponseWriter, request *http.Request) (int, string) {
-	pathToDataBase, _ := filepath.Abs("src/main/configs/database.txt")
-	dbConfig, error := ioutil.ReadFile(pathToDataBase)
+	var dbConfig DataBaseConfig
+
+	pathToDataBaseConfig, _ := filepath.Abs("src/main/configs/database.json")
+	jsonStream, error := ioutil.ReadFile(pathToDataBaseConfig)
 	if error != nil {
-		return -1, "Error reading 'database.txt' file"
+		return -1, "Error reading 'database.json' file"
 	}
 
-	db, error := gorm.Open("postgres", string(dbConfig))
+	json.NewDecoder(bytes.NewReader(jsonStream)).Decode(&dbConfig)
+
+	db, error := gorm.Open(dbConfig.Dialect, dbConfig.DataBaseInfo)
 	if error != nil {
 		panic("Failed to connect database")
 	}
@@ -59,18 +65,22 @@ func loginHandler(response http.ResponseWriter, request *http.Request) (int, str
 	if !user.checkPassword(password) {
 		return http.StatusForbidden, "Parametr 'username' or 'password' is not valid"
 	}
-	
+
 	signer := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"uid" : user.ID,
 	})
 
-	pathToKey, _ := filepath.Abs("src/main/configs/key.txt")
-	secret, error := ioutil.ReadFile(pathToKey)
+	var key JWTKeyConfig
+
+	pathToKey, _ := filepath.Abs("src/main/configs/key.json")
+	jsonStream, error = ioutil.ReadFile(pathToKey)
 	if error != nil {
-		return -1, "Error reading 'key.txt' file"
+		return -1, "Error reading 'key.json' file"
 	}
 
-	tokenString, error := signer.SignedString([]byte(secret))
+	json.NewDecoder(bytes.NewReader(jsonStream)).Decode(&key)
+
+	tokenString, error := signer.SignedString([]byte(key.Key))
 	if error != nil {
 		return http.StatusBadRequest, "Error when signing token"
 	}
