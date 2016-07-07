@@ -14,15 +14,11 @@ import (
 
 func (user User) checkPassword(possiblePassword string) bool {
 	if user.Password == possiblePassword {
+		hash := sha3.New256()
+		hash.Write([]byte(possiblePassword))
 		return true
 	}
-
 	return false
-}
-
-func encryptPassword(password string) {
-	hash := sha3.New256()
-	hash.Write([]byte(password))
 }
 
 func loginHandler(response http.ResponseWriter, request *http.Request) (int, string) {
@@ -49,7 +45,7 @@ func loginHandler(response http.ResponseWriter, request *http.Request) (int, str
 	password := request.Form.Get("password")
 
 	if username == "" || password == "" {
-		return http.StatusBadRequest, "Parametr 'username' or 'password' is not valid"
+		return http.StatusBadRequest, "Parameter 'username' or 'password' is not valid"
 	}
 
 	var user User
@@ -63,9 +59,7 @@ func loginHandler(response http.ResponseWriter, request *http.Request) (int, str
 	if !user.checkPassword(password) {
 		return http.StatusForbidden, "Parametr 'username' or 'password' is not valid"
 	}
-
-	encryptPassword(password)
-
+	
 	signer := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"uid" : user.ID,
 	})
