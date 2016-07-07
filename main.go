@@ -1,16 +1,15 @@
 package main
 
 import (
-	"golang.org/x/crypto/sha3"
-	"github.com/go-martini/martini"
-	//"github.com/jinzhu/gorm"
-	"net/http"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
-	"encoding/json"
-	"fmt"
+	"github.com/go-martini/martini"
 	"github.com/dgrijalva/jwt-go"
-	"log"
+	"golang.org/x/crypto/sha3"
+	"github.com/jinzhu/gorm"
+	"path/filepath"
 	"io/ioutil"
+	"net/http"
+	"fmt"
 )
 
 func (user User) checkPassword(possiblePassword string) bool {
@@ -26,68 +25,69 @@ func encryptPassword(password string) {
 	hash.Write([]byte(password))
 }
 
-type token struct {
-	Token string `json:"token"`
-}
-
-func jsonResponse(response interface{}, w http.ResponseWriter) {
-
-	json, err := json.Marshal(response)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+func loginHandler(response http.ResponseWriter, request *http.Request) (int, string) {
+	pathToDataBase, _ := filepath.Abs("src/main/configs/database.txt")
+	dbConfig, error := ioutil.ReadFile(pathToDataBase)
+	if error != nil {
+		return -1, "Error reading 'database.txt' file"
 	}
 
-	w.WriteHeader(http.StatusOK)
-	w.Header().Set("Content-Type", "application/json")
-	w.Write(json)
-}
+	db, error := gorm.Open("postgres", string(dbConfig))
+	if error != nil {
+		panic("Failed to connect database")
+	}
 
-func loginHandler(response http.ResponseWriter, request *http.Request) {
-	var privateKey []byte
-	privateKey, _ = ioutil.ReadFile("/home/alex/Workspace/golang/src/main/keys/key.rsa")
+	db.LogMode(true)
+	db.AutoMigrate(&User{})
+
+	error = request.ParseForm()
+	if error != nil {
+		return http.StatusBadRequest, "Incorrect POST request"
+	}
+
+	username := request.Form.Get("username")
+	password := request.Form.Get("password")
+
+	if username == "" || password == "" {
+		return http.StatusBadRequest, "Parametr 'username' or 'password' is not valid"
+	}
 
 	var user User
 
-	err := json.NewDecoder(request.Body).Decode(&user)
-	if err != nil {
-		response.WriteHeader(http.StatusForbidden)
-		fmt.Println(response, "Error in request")
-		return
+	db.Where("name = ?", username).Find(&user)
+
+	if user.Name != username {
+		return http.StatusNotFound, "User with current 'username' not found"
 	}
 
-	fmt.Println(user.ID, user.Name, user.Password)
-
-	if user.ID != 1 {
-		response.WriteHeader(http.StatusForbidden)
-		fmt.Println("Error logging in")
-		fmt.Println(response, "Invalid user info")
-		return
+	if !user.checkPassword(password) {
+		return http.StatusForbidden, "Parametr 'username' or 'password' is not valid"
 	}
 
-	signer := jwt.New(jwt.SigningMethodRS256)
+	encryptPassword(password)
 
-	tokenString, err := signer.SignedString(privateKey)
-	if err != nil {
-		log.Printf("Error signing token: %v\n", err)
+	signer := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"uid" : user.ID,
+	})
+
+	pathToKey, _ := filepath.Abs("src/main/configs/key.txt")
+	secret, error := ioutil.ReadFile(pathToKey)
+	if error != nil {
+		return -1, "Error reading 'key.txt' file"
 	}
 
-	resp := token{tokenString}
-	jsonResponse(resp, response)
+	tokenString, error := signer.SignedString([]byte(secret))
+	if error != nil {
+		return http.StatusBadRequest, "Error when signing token"
+	}
+
+	fmt.Println(tokenString)
+
+	return http.StatusCreated, "Created"
 }
 
 func main() {
 	m := martini.Classic()
-
-	//db, err := gorm.Open("postgres", "user=postgres dbname=postgresdb password=superuser1.")
-	//if err != nil {
-	//	panic("Failed to connect database")
-	//}
-	//
-	////var user User
-	////
-	////db.LogMode(true)
-	////db.AutoMigrate(&User{})
 
 	m.Post("/login", loginHandler)
 
