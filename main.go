@@ -6,11 +6,9 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"golang.org/x/crypto/sha3"
 	"github.com/jinzhu/gorm"
-	"path/filepath"
+	"encoding/json"
 	"io/ioutil"
 	"net/http"
-	"fmt"
-	"encoding/json"
 	"bytes"
 )
 
@@ -23,11 +21,18 @@ func (user User) checkPassword(possiblePassword string) bool {
 	return false
 }
 
+func jsonResponse(response interface{}, w http.ResponseWriter) {
+
+	json, _ :=  json.Marshal(response)
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(json)
+}
+
 func loginHandler(response http.ResponseWriter, request *http.Request) (int, string) {
 	var dbConfig DataBaseConfig
 
-	pathToDataBaseConfig, _ := filepath.Abs("src/main/configs/database.json")
-	jsonStream, error := ioutil.ReadFile(pathToDataBaseConfig)
+	jsonStream, error := ioutil.ReadFile("src/main/configs/database.json")
 	if error != nil {
 		return -1, "Error reading 'database.json' file"
 	}
@@ -36,10 +41,10 @@ func loginHandler(response http.ResponseWriter, request *http.Request) (int, str
 
 	db, error := gorm.Open(dbConfig.Dialect, dbConfig.DataBaseInfo)
 	if error != nil {
-		panic("Failed to connect database")
+		return -1, "Failed to connection database"
 	}
 
-	db.LogMode(true)
+	//db.LogMode(true)
 	db.AutoMigrate(&User{})
 
 	error = request.ParseForm()
@@ -72,8 +77,7 @@ func loginHandler(response http.ResponseWriter, request *http.Request) (int, str
 
 	var key JWTKeyConfig
 
-	pathToKey, _ := filepath.Abs("src/main/configs/key.json")
-	jsonStream, error = ioutil.ReadFile(pathToKey)
+	jsonStream, error = ioutil.ReadFile("src/main/configs/key.json")
 	if error != nil {
 		return -1, "Error reading 'key.json' file"
 	}
@@ -85,9 +89,10 @@ func loginHandler(response http.ResponseWriter, request *http.Request) (int, str
 		return http.StatusBadRequest, "Error when signing token"
 	}
 
-	fmt.Println(tokenString)
+	token := Token{tokenString}
+	jsonResponse(token, response)
 
-	return http.StatusCreated, "Created"
+	return http.StatusCreated, ""
 }
 
 func main() {
