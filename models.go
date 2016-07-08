@@ -16,3 +16,7 @@ type DataBaseConfig struct {
 type JWTKeyConfig struct {
 	Key string `json:"key"`
 }
+
+type Token struct {
+	Token string `json:"token"`
+}
