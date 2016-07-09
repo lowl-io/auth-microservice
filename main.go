@@ -29,17 +29,17 @@ func jsonResponse(response interface{}, w http.ResponseWriter) {
 	w.Write(json)
 }
 
-func loginHandler(response http.ResponseWriter, request *http.Request) (int, string) {
+func tokenHandler(response http.ResponseWriter, request *http.Request) (int, string) {
 	var dbConfig DataBaseConfig
 
-	jsonStream, error := ioutil.ReadFile("src/main/configs/database.json")
+	jsonStream, error := ioutil.ReadFile("./config.json")
 	if error != nil {
-		return -1, "Error reading 'database.json' file"
+		return -1, "Error reading 'config.json' file"
 	}
 
 	json.NewDecoder(bytes.NewReader(jsonStream)).Decode(&dbConfig)
 
-	db, error := gorm.Open(dbConfig.Dialect, dbConfig.DataBaseInfo)
+	db, error := gorm.Open(dbConfig.Dialect, dbConfig.Data)
 	if error != nil {
 		return -1, "Failed to connection database"
 	}
@@ -68,7 +68,7 @@ func loginHandler(response http.ResponseWriter, request *http.Request) (int, str
 	}
 
 	if !user.checkPassword(password) {
-		return http.StatusForbidden, "Parametr 'username' or 'password' is not valid"
+		return http.StatusForbidden, "Parameter 'username' or 'password' is not valid"
 	}
 
 	signer := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
@@ -77,9 +77,9 @@ func loginHandler(response http.ResponseWriter, request *http.Request) (int, str
 
 	var key JWTKeyConfig
 
-	jsonStream, error = ioutil.ReadFile("src/main/configs/key.json")
+	jsonStream, error = ioutil.ReadFile("./config.json")
 	if error != nil {
-		return -1, "Error reading 'key.json' file"
+		return -1, "Error reading 'config.json' file"
 	}
 
 	json.NewDecoder(bytes.NewReader(jsonStream)).Decode(&key)
@@ -98,7 +98,7 @@ func loginHandler(response http.ResponseWriter, request *http.Request) (int, str
 func main() {
 	m := martini.Classic()
 
-	m.Post("/login", loginHandler)
+	m.Post("/token", tokenHandler)
 
 	m.Run()
 }
