@@ -9,8 +9,8 @@ type User struct {
 }
 
 type DataBaseConfig struct {
-	Dialect      string `json:"dialect"`
-	DataBaseInfo string `json:"databaseinfo"`
+	Data    string `json:"data"`
+	Dialect string `json:"dialect"`
 }
 
 type JWTKeyConfig struct {
