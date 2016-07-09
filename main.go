@@ -32,7 +32,7 @@ func jsonResponse(response interface{}, w http.ResponseWriter) {
 func tokenHandler(response http.ResponseWriter, request *http.Request) (int, string) {
 	var dbConfig DataBaseConfig
 
-	jsonStream, error := ioutil.ReadFile("./config.json")
+	jsonStream, error := ioutil.ReadFile("config.json")
 	if error != nil {
 		return -1, "Error reading 'config.json' file"
 	}
@@ -77,7 +77,7 @@ func tokenHandler(response http.ResponseWriter, request *http.Request) (int, str
 
 	var key JWTKeyConfig
 
-	jsonStream, error = ioutil.ReadFile("./config.json")
+	jsonStream, error = ioutil.ReadFile("config.json")
 	if error != nil {
 		return -1, "Error reading 'config.json' file"
 	}
