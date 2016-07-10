@@ -1,5 +1,4 @@
 {
-<<<<<<< HEAD
   "database": {
     "dialect": "",
     "connectiondata": "user= dbname= password="
@@ -8,11 +7,6 @@
   "jwt": {
     "key": ""
   }
-=======
-  "dialect": "",
-  "data": "user= dbname= password=",
-  "key": ""
->>>>>>> parent of 52971b9... Change config file
 }
 
 
