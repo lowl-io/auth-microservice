@@ -9,7 +9,6 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
-	"bytes"
 )
 
 func (user User) checkPassword(possiblePassword string) bool {
@@ -23,23 +22,23 @@ func (user User) checkPassword(possiblePassword string) bool {
 
 func jsonResponse(response interface{}, w http.ResponseWriter) {
 
-	json, _ :=  json.Marshal(response)
+	json, _ := json.Marshal(response)
 
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(json)
 }
 
 func tokenHandler(response http.ResponseWriter, request *http.Request) (int, string) {
-	var dbConfig DataBaseConfig
+	var config Config
 
 	jsonStream, error := ioutil.ReadFile("config.json")
 	if error != nil {
 		return -1, "Error reading 'config.json' file"
 	}
 
-	json.NewDecoder(bytes.NewReader(jsonStream)).Decode(&dbConfig)
+	json.Unmarshal(jsonStream, &config)
 
-	db, error := gorm.Open(dbConfig.Dialect, dbConfig.Data)
+	db, error := gorm.Open(config.DataBase.Dialect, config.DataBase.ConnectionData)
 	if error != nil {
 		return -1, "Failed to connection database"
 	}
@@ -75,16 +74,7 @@ func tokenHandler(response http.ResponseWriter, request *http.Request) (int, str
 		"uid" : user.ID,
 	})
 
-	var key JWTKeyConfig
-
-	jsonStream, error = ioutil.ReadFile("config.json")
-	if error != nil {
-		return -1, "Error reading 'config.json' file"
-	}
-
-	json.NewDecoder(bytes.NewReader(jsonStream)).Decode(&key)
-
-	tokenString, error := signer.SignedString([]byte(key.Key))
+	tokenString, error := signer.SignedString([]byte(config.JWT.Key))
 	if error != nil {
 		return http.StatusBadRequest, "Error when signing token"
 	}
