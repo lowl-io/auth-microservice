@@ -1,7 +1,10 @@
 {
-  "dialect": "",
-  "data": "user= dbname= password=",
-  "key": ""
+  "database": {
+    "dialect": "postgres",
+    "connectiondata": "user=postgres dbname=postgresdb password=superuser1."
+  },
+
+  "jwt": {
+    "key": "superusecretwordever"
+  }
 }
-
-
