@@ -8,13 +8,14 @@ type User struct {
 	Status   string
 }
 
-type DataBaseConfig struct {
-	Data    string `json:"data"`
-	Dialect string `json:"dialect"`
-}
-
-type JWTKeyConfig struct {
-	Key string `json:"key"`
+type Config struct {
+	DataBase struct {
+		Dialect 		  string
+		ConnectionData    string
+	}
+	JWT struct {
+		Key string
+	}
 }
 
 type Token struct {
