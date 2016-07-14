@@ -7,18 +7,18 @@ import (
 	"golang.org/x/crypto/sha3"
 	"github.com/jinzhu/gorm"
 	"encoding/json"
+	"encoding/hex"
 	"io/ioutil"
 	"net/http"
 	"fmt"
 )
 
 func (user User) checkPassword(possiblePassword string) bool {
-	if user.Password == possiblePassword {
-		hash := sha3.New256()
-		hash.Write([]byte(possiblePassword))
-		return true
-	}
-	return false
+	hash := sha3.New256()
+	hash.Write([]byte(possiblePassword))
+	possiblePassword = hex.EncodeToString(hash.Sum(nil))
+
+	return user.Password == possiblePassword
 }
 
 func jsonResponse(response interface{}, w http.ResponseWriter) {
@@ -44,9 +44,9 @@ func tokenHandler(response http.ResponseWriter, request *http.Request, config Co
 
 	var user User
 
-	db.Where("name = ?", username).Find(&user)
+	db.Where("username = ?", username).Find(&user)
 
-	if user.Name != username {
+	if user.Username != username {
 		return http.StatusNotFound, "User with current 'username' not found"
 	}
 
