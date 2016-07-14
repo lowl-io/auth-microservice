@@ -9,6 +9,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
+	"fmt"
 )
 
 func (user User) checkPassword(possiblePassword string) bool {
@@ -28,25 +29,8 @@ func jsonResponse(response interface{}, w http.ResponseWriter) {
 	w.Write(json)
 }
 
-func tokenHandler(response http.ResponseWriter, request *http.Request) (int, string) {
-	var config Config
-
-	jsonStream, error := ioutil.ReadFile("config.json")
-	if error != nil {
-		return -1, "Error reading 'config.json' file"
-	}
-
-	json.Unmarshal(jsonStream, &config)
-
-	db, error := gorm.Open(config.DataBase.Dialect, config.DataBase.ConnectionData)
-	if error != nil {
-		return -1, "Failed to connection database"
-	}
-
-	//db.LogMode(true)
-	db.AutoMigrate(&User{})
-
-	error = request.ParseForm()
+func tokenHandler(response http.ResponseWriter, request *http.Request, config Config, db *gorm.DB) (int, string) {
+	error := request.ParseForm()
 	if error != nil {
 		return http.StatusBadRequest, "Incorrect POST request"
 	}
@@ -86,7 +70,30 @@ func tokenHandler(response http.ResponseWriter, request *http.Request) (int, str
 }
 
 func main() {
+	var config Config
+
+	jsonStream, error := ioutil.ReadFile("config.json")
+	if error != nil {
+		fmt.Errorf("Error reading 'config.json' file")
+	}
+
+	json.Unmarshal(jsonStream, &config)
+
+	db, error := gorm.Open(config.DataBase.Dialect, config.DataBase.ConnectionData)
+	if error != nil {
+		fmt.Errorf("Failed to connection database")
+	}
+
+	db.DB().SetMaxIdleConns(10)
+	db.DB().SetMaxOpenConns(50)
+
+	//db.LogMode(true)
+	db.AutoMigrate(&User{})
+
 	m := martini.Classic()
+
+	m.Map(db)
+	m.Map(config)
 
 	m.Post("/token", tokenHandler)
 
