@@ -5,7 +5,7 @@ type User struct {
 	Name     string    `gorm:"not null;type:varchar(60);unique_index"`
 	Username string	   `gorm:"not null;type:varchar(60);unique_index"`
 	Email    string    `gorm:"type:varchar(255);unique_index"`
-	Password string    `gorm:"not null;type:varchar(256)"`
+	Password string    `gorm:"not null;type:varchar(255)"`
 	Status   string
 }
 
