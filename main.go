@@ -11,6 +11,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"fmt"
+	"strings"
 )
 
 func (user User) checkPassword(possiblePassword string) bool {
@@ -23,7 +24,10 @@ func (user User) checkPassword(possiblePassword string) bool {
 
 func jsonResponse(response interface{}, w http.ResponseWriter) {
 
-	json, _ := json.Marshal(response)
+	json, error := json.Marshal(response)
+	if error != nil {
+		fmt.Errorf("Error creating json")
+	}
 
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(json)
@@ -35,19 +39,27 @@ func tokenHandler(response http.ResponseWriter, request *http.Request, config Co
 		return http.StatusBadRequest, "Incorrect POST request"
 	}
 
-	username := request.Form.Get("username")
+	login := request.Form.Get("username")
 	password := request.Form.Get("password")
 
-	if username == "" || password == "" {
+	if login == "" || password == "" {
 		return http.StatusBadRequest, "Parameter 'username' or 'password' is not valid"
 	}
 
 	var user User
 
-	db.Where("username = ?", username).Find(&user)
+	if strings.Contains(login, "@") {
+		db.Where("email = ?", login).Find(&user)
 
-	if user.Username != username {
-		return http.StatusNotFound, "User with current 'username' not found"
+		if user.Email != login {
+			return http.StatusNotFound, "User with current 'username' not found by login"
+		}
+	} else {
+		db.Where("username = ?", login).Find(&user)
+
+		if user.Username != login {
+			return http.StatusNotFound, "User with current 'username' not found by login"
+		}
 	}
 
 	if !user.checkPassword(password) {
