@@ -3,7 +3,6 @@
     "dialect": "",
     "connectiondata": "user= dbname= password="
   },
-
   "jwt": {
     "key": ""
   }
