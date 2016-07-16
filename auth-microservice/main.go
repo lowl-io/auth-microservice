@@ -22,13 +22,14 @@ func (user User) checkPassword(possiblePassword string) bool {
 	return user.Password == possiblePassword
 }
 
-func jsonResponse(response interface{}, w http.ResponseWriter) {
+func jsonResponse(response interface{}, w http.ResponseWriter)  {
 
 	json, error := json.Marshal(response)
 	if error != nil {
 		fmt.Errorf("Error creating json")
 	}
 
+	w.WriteHeader(http.StatusOK)
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(json)
 }
@@ -75,10 +76,10 @@ func tokenHandler(response http.ResponseWriter, request *http.Request, config Co
 		return http.StatusBadRequest, "Error when signing token"
 	}
 
-	token := Token{tokenString}
-	jsonResponse(token, response)
+	//token := Token{tokenString}
+	//jsonResponse(token, response)
 
-	return http.StatusCreated, ""
+	return http.StatusCreated, "Token: " + tokenString
 }
 
 func main() {
