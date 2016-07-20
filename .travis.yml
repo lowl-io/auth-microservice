@@ -3,6 +3,9 @@ language: go
 go:
   - 1.6
 
+services:
+  - postgresql
+
 install:
   - go get github.com/jinzhu/gorm
   - go get github.com/dgrijalva/jwt-go
@@ -10,6 +13,9 @@ install:
   - go get github.com/jinzhu/gorm/dialects/postgres
   - go get github.com/lib/pq
   - go get golang.org/x/crypto/sha3
+
+before_script:
+  - psql -c 'create database postgresdb;' -U postgres
 
 script: go test -v ./...
 
