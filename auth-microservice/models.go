@@ -13,6 +13,8 @@ type Config struct {
 	DataBase struct {
 		Dialect        string
 		ConnectionData string
+		IdleConns	   int
+		MaxOpenConns   int
 	}
 	JWT struct {
 		Key string

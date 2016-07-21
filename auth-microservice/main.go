@@ -76,10 +76,10 @@ func tokenHandler(response http.ResponseWriter, request *http.Request, config Co
 		return http.StatusBadRequest, "Error when signing token"
 	}
 
-	//token := Token{tokenString}
-	//jsonResponse(token, response)
+	token := Token{tokenString}
+	jsonResponse(token, response)
 
-	return http.StatusCreated, "Token: " + tokenString
+	return http.StatusCreated, ""
 }
 
 func main() {
@@ -97,8 +97,11 @@ func main() {
 		fmt.Errorf("Failed to connection database")
 	}
 
-	db.DB().SetMaxIdleConns(10)
-	db.DB().SetMaxOpenConns(50)
+	fmt.Println(config.DataBase.IdleConns)
+	fmt.Println(config.DataBase.MaxOpenConns)
+
+	db.DB().SetMaxIdleConns(config.DataBase.IdleConns)
+	db.DB().SetMaxOpenConns(config.DataBase.MaxOpenConns)
 
 	//db.LogMode(true)
 	db.AutoMigrate(&User{})

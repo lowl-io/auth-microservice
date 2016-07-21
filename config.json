@@ -1,9 +1,11 @@
 {
   "database": {
-    "dialect": "",
-    "connectiondata": "user= dbname= password="
+    "dialect": "postgres",
+    "connectiondata": "user=postgres dbname=postgresdb password=superuser1.",
+    "idleconns": 10,
+    "maxopenconns": 50
   },
   "jwt": {
-    "key": ""
+    "key": "secretkey"
   }
 }
