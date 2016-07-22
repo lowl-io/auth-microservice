@@ -97,9 +97,6 @@ func main() {
 		fmt.Errorf("Failed to connection database")
 	}
 
-	fmt.Println(config.DataBase.IdleConns)
-	fmt.Println(config.DataBase.MaxOpenConns)
-
 	db.DB().SetMaxIdleConns(config.DataBase.IdleConns)
 	db.DB().SetMaxOpenConns(config.DataBase.MaxOpenConns)
 
