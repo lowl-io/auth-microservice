@@ -22,24 +22,28 @@ func TestHandler(t *testing.T) {
 	login := "s0lus"
 	password := "password"
 
+	// login or password not exists
 	if login == "" || password == "" {
 		t.Fatal("Login or password is not valid")
 	}
 
-	if strings.Contains(login, "@") {
-		db.Where("email = ?", login).Find(&user)
-		if user.Email != login {
-			t.Fatal("User with current 'login' not found")
+	// login = exists, but incorrect
+	// password = exists, but incorrect
+	if !(login == "") && !(password == "") {
+		if strings.Contains(login, "@") {
+			db.Where("email = ?", login).Find(&user)
+			if login != user.Email {
+				t.Fatal("Login or password is not valid by email")
+			}
+		} else {
+			db.Where("username = ?", login).Find(&user)
+			if login != user.Username {
+				t.Fatal("Login is not valid by username")
+			}
 		}
-	} else {
-		db.Where("username = ?", login).Find(&user)
-		if user.Username != login {
-			t.Fatal("User with current 'login' not found")
+
+		if password != user.Password {
+			t.Fatal("Password is not valid")
 		}
 	}
-
-	if (login == user.Username || login == user.Email) && password != user.Password {
-		t.Fatal("Login or password is not valid")
-	}
-
 }
