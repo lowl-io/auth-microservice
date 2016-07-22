@@ -10,8 +10,8 @@ import (
 	"encoding/hex"
 	"io/ioutil"
 	"net/http"
-	"fmt"
 	"strings"
+	"fmt"
 )
 
 func (user User) checkPassword(possiblePassword string) bool {
@@ -22,14 +22,13 @@ func (user User) checkPassword(possiblePassword string) bool {
 	return user.Password == possiblePassword
 }
 
-func jsonResponse(response interface{}, w http.ResponseWriter)  {
+func jsonResponse(response interface{}, w http.ResponseWriter) {
 
 	json, error := json.Marshal(response)
 	if error != nil {
 		fmt.Errorf("Error creating json")
 	}
 
-	w.WriteHeader(http.StatusOK)
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(json)
 }
@@ -51,18 +50,14 @@ func tokenHandler(response http.ResponseWriter, request *http.Request, config Co
 
 	if strings.Contains(login, "@") {
 		db.Where("email = ?", login).Find(&user)
-
-		if user.Email != login {
-			return http.StatusNotFound, "User with current 'username' not found by login"
-		}
 	} else {
 		db.Where("username = ?", login).Find(&user)
-
-		if user.Username != login {
-			return http.StatusNotFound, "User with current 'username' not found by login"
-		}
 	}
 
+	if user.ID == 0 {
+		return http.StatusNotFound, "User with current 'username' not found by login"
+	}
+	
 	if !user.checkPassword(password) {
 		return http.StatusForbidden, "Parameter 'username' or 'password' is not valid"
 	}
