@@ -1,0 +1,55 @@
+{
+	"ImportPath": "github.com/s0lus/auth-microservice",
+	"GoVersion": "go1.6",
+	"GodepVersion": "v74",
+	"Deps": [
+		{
+			"ImportPath": "github.com/codegangsta/inject",
+			"Comment": "v1.0-rc1-10-g33e0aa1",
+			"Rev": "33e0aa1cb7c019ccc3fbe049a8262a6403d30504"
+		},
+		{
+			"ImportPath": "github.com/dgrijalva/jwt-go",
+			"Comment": "v3.0.0-4-g01aeca5",
+			"Rev": "01aeca54ebda6e0fbfafd0a524d234159c05ec20"
+		},
+		{
+			"ImportPath": "github.com/go-martini/martini",
+			"Comment": "v1.0-185-gc257c41",
+			"Rev": "c257c412d547ac70fcaf5596c1a50a7cb832c1fc"
+		},
+		{
+			"ImportPath": "github.com/jinzhu/gorm",
+			"Comment": "v1.0-48-gb507cdf",
+			"Rev": "b507cdf93d0629e7177a70df20932bd834c92b03"
+		},
+		{
+			"ImportPath": "github.com/jinzhu/gorm/dialects/postgres",
+			"Comment": "v1.0-48-gb507cdf",
+			"Rev": "b507cdf93d0629e7177a70df20932bd834c92b03"
+		},
+		{
+			"ImportPath": "github.com/jinzhu/inflection",
+			"Rev": "8f4d3a0d04ce0b7c0cf3126fb98524246d00d102"
+		},
+		{
+			"ImportPath": "github.com/lib/pq",
+			"Comment": "go1.0-cutoff-107-g4dd446e",
+			"Rev": "4dd446efc17690bc53e154025146f73203b18309"
+		},
+		{
+			"ImportPath": "github.com/lib/pq/hstore",
+			"Comment": "go1.0-cutoff-107-g4dd446e",
+			"Rev": "4dd446efc17690bc53e154025146f73203b18309"
+		},
+		{
+			"ImportPath": "github.com/lib/pq/oid",
+			"Comment": "go1.0-cutoff-107-g4dd446e",
+			"Rev": "4dd446efc17690bc53e154025146f73203b18309"
+		},
+		{
+			"ImportPath": "golang.org/x/crypto/sha3",
+			"Rev": "10c26747e67d76ad4fafe6087c6f4073c3b22942"
+		}
+	]
+}
