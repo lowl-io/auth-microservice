@@ -7,7 +7,7 @@ services:
   - postgresql
 
 install:
-  - export GOPATH="${TRAVIS_BUILD_DIR}/Godeps:$GOPATH"
+  - export GOPATH="${TRAVIS_BUILD_DIR}/Godeps/:$GOPATH"
   - export PATH="${TRAVIS_BUILD_DIR}/Godeps/bin:$PATH"
   - go get github.com/tools/godep
   - godep restore
